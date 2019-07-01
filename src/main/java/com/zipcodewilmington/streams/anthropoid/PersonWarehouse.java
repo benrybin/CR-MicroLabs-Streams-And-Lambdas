@@ -8,6 +8,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -50,8 +53,13 @@ public final class PersonWarehouse implements Iterable<Person> {
 
 
 
-        return people.stream().distinct();
+        return people.stream().filter(distinctByName(p-> p.getName()));
     }
+    public static <Person>Predicate<Person> distinctByName(Function<? super Person,Object> nameExtractor){
+        Map<Object,Boolean> map = new ConcurrentHashMap<>();
+        return t -> map.putIfAbsent(nameExtractor.apply(t),Boolean.TRUE) == null;
+    }
+
 
 
     /**
@@ -59,7 +67,10 @@ public final class PersonWarehouse implements Iterable<Person> {
      * @return a Stream of respective
      */ //TODO
     public Stream<Person> getUniquelyNamedPeopleStartingWith(Character character) {
-        return null;
+
+
+        return people.stream().filter(name -> name.getName().charAt(0) == character)
+                .filter(distinctByName(p->p.getName()));
     }
 
     /**
@@ -67,14 +78,15 @@ public final class PersonWarehouse implements Iterable<Person> {
      * @return a Stream of respective
      */ //TODO
     public Stream<Person> getFirstNUniquelyNamedPeople(int n) {
-        return null;
+        return
+                people.stream().filter(distinctByName(p-> p.getName())).limit(n);
     }
 
     /**
      * @return a mapping of Person Id to the respective Person name
      */ // TODO
     public Map<Long, String> getIdToNameMap() {
-        return null;
+        return  people.stream().collect(Collectors.toMap(Person::getPersonalId,Person::getName));
     }
 
 
@@ -82,7 +94,10 @@ public final class PersonWarehouse implements Iterable<Person> {
      * @return Stream of Stream of Aliases
      */ // TODO
     public Stream<Stream<String>> getNestedAliases() {
-        return null;
+
+
+        return  null;
+
     }
 
 
